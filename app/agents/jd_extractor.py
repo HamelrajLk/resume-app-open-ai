@@ -1,10 +1,10 @@
 import json
-from app.prompts import EXTRACT_CANDIDATE_DETAILS
+from app.prompts import EXTRACT_JD_DETAILS
 from app.services.openai_client import client
 
 
-def generate_response(resume_data: str) -> dict:
-    prompt = EXTRACT_CANDIDATE_DETAILS.format(resume_text=resume_data)
+def analyze_jd(jd_text: str) -> dict:
+    prompt = EXTRACT_JD_DETAILS.format(jd_text=jd_text)
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
@@ -13,4 +13,4 @@ def generate_response(resume_data: str) -> dict:
     try:
         return json.loads(raw)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Resume extractor returned invalid JSON: {e}\nRaw response: {raw}")
+        raise ValueError(f"JD extractor returned invalid JSON: {e}\nRaw response: {raw}")

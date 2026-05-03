@@ -3,20 +3,34 @@ import requests
 
 st.title("Resume Screening App")
 
-uploaded_file = st.file_uploader("Upload a resume (PDF)", type="pdf")
+resume_file = st.file_uploader("Upload Resume (PDF)", type="pdf")
+jd_file = st.file_uploader("Upload Job Description (PDF)", type="pdf")
 
-if uploaded_file is not None:
-    st.write("File uploaded successfully:", uploaded_file.name)
-
-    if st.button("Process Resume"):
-        files = {"resume": (uploaded_file.name, uploaded_file, "application/pdf")}
-        response = requests.post("http://localhost:8000/screen_resume", files=files)
-
-        if response.status_code == 200:
-            st.success("Resume processed successfully!")
-            response_data = response.json()
-            st.json(response_data)
-        else:
-            st.error(f"Error {response.status_code}: {response.text}")
-else:
-    st.warning("Please upload a resume file.")
+if st.button("Screen Resume"):
+    if not resume_file:
+        st.warning("Please upload a resume PDF.")
+    elif not jd_file:
+        st.warning("Please upload a job description PDF.")
+    else:
+        with st.spinner("Analysing..."):
+            files = {
+                "resume": (resume_file.name, resume_file, "application/pdf"),
+                "jd": (jd_file.name, jd_file, "application/pdf"),
+            }
+            try:
+                response = requests.post("http://localhost:8000/screen_resume", files=files)
+                if response.status_code == 200:
+                    data = response.json()
+                    status = data.get("candidate_status", "Unknown")
+                    color = "green" if status == "Selected" else "red"
+                    st.markdown(f"### Status: :{color}[{status}]")
+                    st.write(f"**Skill Match:** {data.get('skill_match_percentage', 'N/A')}%")
+                    st.write(f"**Experience:** {data.get('experience', 'N/A')} years")
+                    st.write(f"**Reason:** {data.get('reason', '')}")
+                    st.write(f"**Matched Skills:** {', '.join(data.get('matched_skills', []))}")
+                    with st.expander("Full JSON Response"):
+                        st.json(data)
+                else:
+                    st.error(f"Error {response.status_code}: {response.json().get('detail', response.text)}")
+            except requests.exceptions.ConnectionError:
+                st.error("Could not connect to the backend. Make sure the FastAPI server is running on port 8000.")
