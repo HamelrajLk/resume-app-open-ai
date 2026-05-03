@@ -24,7 +24,7 @@ Job JD (PDF) ──┘
 |-----------|----------------------|
 | Backend   | FastAPI              |
 | Frontend  | Streamlit            |
-| AI        | OpenAI GPT-4         |
+| AI        | OpenAI GPT-4o-mini   |
 | PDF Parse | PyPDF2               |
 | Config    | python-dotenv        |
 
@@ -47,6 +47,8 @@ resume/
 │       └── index.py             # Streamlit frontend
 ├── .env                         # API keys (not committed)
 ├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
 └── README.md
 ```
 
@@ -55,8 +57,8 @@ resume/
 ## Setup & Installation
 
 ### Prerequisites
-- Python 3.10+
 - An [OpenAI API key](https://platform.openai.com/api-keys)
+- Docker (recommended) **or** Python 3.10+
 
 ### 1. Clone the repository
 
@@ -65,7 +67,30 @@ git clone <your-repo-url>
 cd resume
 ```
 
-### 2. Create a virtual environment
+### 2. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+---
+
+## Running with Docker (recommended)
+
+```bash
+docker-compose up --build
+```
+
+- API: `http://localhost:8000`
+- UI: `http://localhost:8501`
+
+---
+
+## Running Locally
+
+### Create a virtual environment
 
 ```bash
 python -m venv .venv
@@ -77,14 +102,6 @@ source .venv/bin/activate       # macOS/Linux
 
 ```bash
 pip install -r requirements.txt
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file in the project root:
-
-```env
-OPENAI_API_KEY=your_openai_api_key_here
 ```
 
 ---
@@ -117,9 +134,10 @@ UI will open at `http://localhost:8501`
 Screens a resume against a job description.
 
 **Request:** `multipart/form-data`
-| Field    | Type | Description          |
-|----------|------|----------------------|
-| `resume` | file | Resume PDF file      |
+| Field    | Type | Description               |
+|----------|------|---------------------------|
+| `resume` | file | Candidate's resume PDF    |
+| `jd`     | file | Job description PDF       |
 
 **Response:**
 ```json

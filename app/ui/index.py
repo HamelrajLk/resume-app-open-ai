@@ -1,5 +1,8 @@
+import os
 import streamlit as st
 import requests
+
+API_URL = os.getenv("API_URL", "http://localhost:8000")
 
 st.title("Resume Screening App")
 
@@ -18,7 +21,7 @@ if st.button("Screen Resume"):
                 "jd": (jd_file.name, jd_file, "application/pdf"),
             }
             try:
-                response = requests.post("http://localhost:8000/screen_resume", files=files)
+                response = requests.post(f"{API_URL}/screen_resume", files=files)
                 if response.status_code == 200:
                     data = response.json()
                     status = data.get("candidate_status", "Unknown")
