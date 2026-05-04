@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 resources/*
 !resources/.gitkeep
+app/resources/credentials.json
+app/resources/processed_files.json
