@@ -1,10 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, HTTPException
+from apscheduler.schedulers.background import BackgroundScheduler
 from app.services.parsepdf import extract_text_from_pdf
 from app.agents.resume_extractor import generate_response
 from app.agents.jd_extractor import analyze_jd
 from app.agents.evaluation import candidate_evaluation
+from app.services.drive_listener import poll_drive
 
-app = FastAPI()
+scheduler = BackgroundScheduler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    scheduler.add_job(poll_drive, "interval", seconds=30)
+    scheduler.start()
+    yield
+    scheduler.shutdown()
+
+app = FastAPI(lifespan=lifespan)
 
 
 def _require_pdf(file: UploadFile) -> None:
